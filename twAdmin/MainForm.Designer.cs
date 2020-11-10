@@ -33,6 +33,8 @@ namespace tw_app
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.usersGridView = new System.Windows.Forms.DataGridView();
+            this.username_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fullname_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmUsers = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -46,8 +48,6 @@ namespace tw_app
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.copy_sbtn = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.username_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fullname_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.usersGridView)).BeginInit();
             this.cmUsers.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -75,13 +75,31 @@ namespace tw_app
             this.usersGridView.Size = new System.Drawing.Size(344, 560);
             this.usersGridView.TabIndex = 3;
             this.usersGridView.RowEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.usersGridView_RowEnter);
+            this.usersGridView.MouseEnter += new System.EventHandler(this.usersGridView_MouseEnter);
+            // 
+            // username_cl
+            // 
+            this.username_cl.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.username_cl.HeaderText = "Username";
+            this.username_cl.Name = "username_cl";
+            this.username_cl.ReadOnly = true;
+            this.username_cl.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.username_cl.Width = 80;
+            // 
+            // fullname_cl
+            // 
+            this.fullname_cl.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.fullname_cl.HeaderText = "Fullname";
+            this.fullname_cl.Name = "fullname_cl";
+            this.fullname_cl.ReadOnly = true;
+            this.fullname_cl.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // cmUsers
             // 
             this.cmUsers.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.allToolStripMenuItem});
             this.cmUsers.Name = "cmUsers";
-            this.cmUsers.Size = new System.Drawing.Size(89, 26);
+            this.cmUsers.Size = new System.Drawing.Size(153, 48);
             // 
             // allToolStripMenuItem
             // 
@@ -89,8 +107,9 @@ namespace tw_app
             this.allToolStripMenuItem.CheckOnClick = true;
             this.allToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.allToolStripMenuItem.Name = "allToolStripMenuItem";
-            this.allToolStripMenuItem.Size = new System.Drawing.Size(88, 22);
+            this.allToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.allToolStripMenuItem.Text = "All";
+            this.allToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -198,23 +217,6 @@ namespace tw_app
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // username_cl
-            // 
-            this.username_cl.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.username_cl.HeaderText = "Username";
-            this.username_cl.Name = "username_cl";
-            this.username_cl.ReadOnly = true;
-            this.username_cl.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.username_cl.Width = 80;
-            // 
-            // fullname_cl
-            // 
-            this.fullname_cl.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.fullname_cl.HeaderText = "Fullname";
-            this.fullname_cl.Name = "fullname_cl";
-            this.fullname_cl.ReadOnly = true;
-            this.fullname_cl.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // MainForm
             // 

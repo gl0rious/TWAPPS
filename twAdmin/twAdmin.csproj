@@ -7,8 +7,8 @@
     <ProjectGuid>{5D461FC3-8ADF-4266-8CA3-3436C30F6ED3}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>tw_app</RootNamespace>
-    <AssemblyName>tw_app</AssemblyName>
+    <RootNamespace>twAdmin</RootNamespace>
+    <AssemblyName>twAdmin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>accounting%281%29.ico</ApplicationIcon>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -96,13 +96,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="accounting%281%29.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\TWOra\TWOra.csproj">
       <Project>{6FDE824C-6E8B-409F-B8D0-D7ACEF63EF54}</Project>
       <Name>TWOra</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="app.ico" />
+    <Content Include="FormRoles.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

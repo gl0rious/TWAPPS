@@ -16,6 +16,7 @@ namespace tw_app
         List<string> validRoles;
         List<string> loadedUserRoles;
         List<string> editedUserRoles;
+        Dictionary<string, List<string>> roleTree = new Dictionary<string, List<string>>();
         List<User> users;
         XElement configRoles;
         Font normalFont;
@@ -28,7 +29,7 @@ namespace tw_app
         {
             InitializeComponent();
         }
-       
+
         private void MainForm_Load(object sender, EventArgs e)
         {
             ConnectForm dialog = new ConnectForm();
@@ -41,7 +42,7 @@ namespace tw_app
             }
             normalFont = new Font("arial",10);
             boldFont = new Font(normalFont,FontStyle.Bold);
-            configRoles = XElement.Load(@"form_roles.xml");
+            configRoles = XElement.Load(@"FormRoles.xml");
             db = dialog.Database;
             setValidRoles();
             initTabs();
@@ -60,6 +61,10 @@ namespace tw_app
                 flow.AutoScroll = true;
                 flow.AutoSize = true;
                 tab.Controls.Add(flow);
+                var menuItem = cmUsers.Items.Add(tab.Name) as ToolStripMenuItem;
+                menuItem.CheckOnClick = true;
+                menuItem.Checked = false;
+                menuItem.Click += MenuItem_Click; ;
                 flow.SuspendLayout();
                 foreach(var roleGroup in appRoles.Elements()) {
                     var label = new Label();
@@ -84,11 +89,39 @@ namespace tw_app
                 }
                 flow.ResumeLayout();
                 flow.PerformLayout();
+                flow.MouseEnter += Flow_MouseEnter;
             }      
+        }
+
+        private void MenuItem_Click(object sender, EventArgs e) {
+            var menuItem = sender as ToolStripMenuItem;
+            foreach(ToolStripMenuItem item in cmUsers.Items) {
+                item.Checked = item == menuItem;
+            }
+            if(menuItem == allToolStripMenuItem)
+                initUsersTable();
+            else {
+                var appRoles = roleTree[menuItem.Text];
+                usersGridView.SuspendLayout();
+                usersGridView.Rows.Clear();
+                foreach(User user in users) {
+                    var roles = db.GetUserRoles(user.Username);
+                    if(roles.Exists(r=>appRoles.Contains(r)))
+                        usersGridView.Rows.Add(user.Username, user.Fullname);
+                }
+                usersGridView.ResumeLayout();
+            }
+        }
+
+        private void Flow_MouseEnter(object sender, EventArgs e) {
+            var flow = sender as FlowLayoutPanel;
+            flow.Focus();
         }
 
         private void Cb_CheckedChanged(object sender, EventArgs e) {
             var cb = sender as CheckBox;
+            cb.ForeColor = cb.Checked ? Color.DarkRed :
+                Color.FromKnownColor(KnownColor.ControlText);
             if(cb.Checked && !editedUserRoles.Contains(cb.Name)) {
                 editedUserRoles.Add(cb.Name);
             }
@@ -112,10 +145,14 @@ namespace tw_app
         {            
             validRoles = db.GetAllRoles();
             List<string> configValidRoles = new List<string>();
-            foreach (var appRoles in configRoles.Elements())
-                foreach (var roleGroup in appRoles.Elements())
-                    foreach (var role in roleGroup.Elements())
+            foreach(var appRoles in configRoles.Elements()) {
+                roleTree[appRoles.Name.LocalName] = new List<string>();
+                foreach(var roleGroup in appRoles.Elements())
+                    foreach(var role in roleGroup.Elements()) {
                         configValidRoles.Add(role.Name.LocalName);
+                        roleTree[appRoles.Name.LocalName].Add(role.Name.LocalName);
+                    }
+            }
             validRoles.RemoveAll(role => !configValidRoles.Contains(role));
         }
 
@@ -123,8 +160,11 @@ namespace tw_app
         {
             users = db.GetUsersList();
             users.Sort((user1,user2)=>user1.Username.CompareTo(user2.Username));
+            usersGridView.SuspendLayout();
+            usersGridView.Rows.Clear();
             foreach (var user in users)
                 usersGridView.Rows.Add(user.Username,user.Fullname);
+            usersGridView.ResumeLayout();
         }
 
         private void usersGridView_RowEnter(object sender, DataGridViewCellEventArgs e)
@@ -140,6 +180,7 @@ namespace tw_app
             loadedUserRoles = db.GetUserRoles(selectedUser);
             loadedUserRoles.RemoveAll(role => !validRoles.Contains(role));
             editedUserRoles = loadedUserRoles.ToList();
+            var flow = tabs.SelectedTab.Controls[0] as FlowLayoutPanel;
             allCheckBoxes.ForEach(cb => cb.Checked = loadedUserRoles.Contains(cb.Name));
             updateStats();
         }
@@ -198,6 +239,10 @@ namespace tw_app
                 editedUserRoles = copiedRoles.ToList();
                 allCheckBoxes.ForEach(cb => cb.Checked = copiedRoles.Contains(cb.Name));
             }
+        }
+
+        private void usersGridView_MouseEnter(object sender, EventArgs e) {
+            usersGridView.Focus();
         }
     }
 }

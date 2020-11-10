@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MandatChecker", "MandatChecker\MandatChecker.csproj", "{406348E9-7FF3-4F99-BE1A-52649A4B84E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "twAdmin", "tw_app\twAdmin.csproj", "{5D461FC3-8ADF-4266-8CA3-3436C30F6ED3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "twAdmin", "twAdmin\twAdmin.csproj", "{5D461FC3-8ADF-4266-8CA3-3436C30F6ED3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACCT", "ACCT\ACCT.csproj", "{8F393780-B602-42C8-AEA7-0E0A6FFD58CB}"
 EndProject
