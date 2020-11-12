@@ -23,6 +23,7 @@ namespace MandatChecker {
         public MainForm()
         {
             InitializeComponent();
+
         }
         Regex digitsOnly = new Regex(@"[^\d]");
         Regex nameRule = new Regex(@"[^A-Z \/\-\.]");
@@ -37,17 +38,7 @@ namespace MandatChecker {
         int headerMandat = 0;
         Color[] colors;
         //Font underlinedFont;
-        const string cnx_string = "Data Source=(DESCRIPTION="
-                + "(ADDRESS=(PROTOCOL=TCP)(HOST={0})(PORT={1}))"
-                + "(CONNECT_DATA=(SERVICE_NAME={2})));"
-                + "User Id={3};Password={4};";
-        OracleConnection cnx = new OracleConnection();
-        OracleDataReader execute(string sql)
-        {
-            OracleCommand cmd = new OracleCommand(sql, cnx);
-            cmd.CommandType = CommandType.Text;
-            return cmd.ExecuteReader();
-        }
+        
 
         public bool isUserExists(string name, string account)
         {

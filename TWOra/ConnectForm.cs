@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace TWOra {
@@ -50,6 +51,8 @@ namespace TWOra {
                     MessageBox.Show(Database.LastError, "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             txtUsername.Text = ConnectionSetting.Username;
+            if(txtUsername.Text != null && txtUsername.Text.Length > 0)
+                txtPassword.Select();
         }
     }
 }

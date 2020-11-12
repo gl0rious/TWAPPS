@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace twAdmin.Properties {
+namespace TWOra.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace twAdmin.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("twAdmin.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TWOra.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,25 @@ namespace twAdmin.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;PRIVILEGES&gt;
+        ///&lt;DEPENSE&gt;
+        ///  &lt;FONCTIONNEMENT&gt;
+        ///    &lt;DP_FONCT&gt;MENU FONCTIONNEMENT&lt;/DP_FONCT&gt;
+        ///    &lt;DP_F_CLOT_GEST&gt;CLÔTURE DE LA GESTION-FCT&lt;/DP_F_CLOT_GEST&gt;
+        ///    &lt;DP_F_TAB_STAT&gt;SAISIE ORD-CHAP-BANQUES-FCT&lt;/DP_F_TAB_STAT&gt;
+        ///    &lt;DP_F_CREDIT&gt;PRISE EN CHARGE DES CRÉDITS-FCT&lt;/DP_F_CREDIT&gt;
+        ///    &lt;DP_F_CREDIT_S&gt;SAISIE DE CRÉDITS-FCT&lt;/DP_F_CREDIT_S&gt;
+        ///    &lt;DP_F_CREDIT_M&gt;MODIFICATION DES CRÉDITS-FCT&lt;/DP_F_CREDIT_M&gt;
+        ///    &lt;DP_F_CREDIT_A&gt;ANNULATION DE CRÉDITS-FCT&lt;/DP_F_CREDIT_A&gt;
+        ///    &lt;DP_F_ENGAGE&gt;ENGAGEMENT DES CRÉDITS-FCT&lt;/DP_F_ENGA [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string FormRoles {
+            get {
+                return ResourceManager.GetString("FormRoles", resourceCulture);
             }
         }
     }

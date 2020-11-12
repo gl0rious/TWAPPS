@@ -34,8 +34,10 @@ namespace unBlock
             var users = db.GetUsersList();
             var sessions = db.GetUserSessions();
             foreach(var user in users) {
-                if(sessions.Select(s=>s.Username).Contains(user.Username))
-                    dataGridView1.Rows.Add(false, user.Username, 
+                if(sessions.Exists(s=>s.Username==user.Username))
+                    dataGridView1.Rows.Add(
+                        false, 
+                        user.Username, 
                         user.Fullname,
                         sessions.Count(s => s.Username == user.Username),
                         user.State.ToString());

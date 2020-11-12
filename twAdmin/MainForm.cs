@@ -2,57 +2,57 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using TWOra;
 
-namespace tw_app
-{
-    public partial class MainForm  : Form
-    {
+namespace tw_app {
+    public partial class MainForm : Form {
         Database db;
-        List<string> validRoles;
-        List<string> loadedUserRoles;
-        List<string> editedUserRoles;
-        Dictionary<string, List<string>> roleTree = new Dictionary<string, List<string>>();
+        List<Role> loadedUserRoles;
+        List<Role> editedUserRoles;
+        List<Role> allRoles;
         List<User> users;
-        XElement configRoles;
+        User selectedUser;
         Font normalFont;
         Font boldFont;
-        string selectedUser;
+        Color checkedColor;
+        Color uncheckedColor;
 
-        List<CheckBox> allCheckBoxes = new List<CheckBox>();
-
-        public MainForm()
-        {
+        public MainForm() {
             InitializeComponent();
+            normalFont = new Font("arial", 10);
+            boldFont = new Font(normalFont, FontStyle.Bold);
+            checkedColor = Color.DarkRed;
+            uncheckedColor = Color.FromKnownColor(KnownColor.ControlText);
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
-        {
+        private void MainForm_Load(object sender, EventArgs e) {
             ConnectForm dialog = new ConnectForm();
             if(dialog.ShowDialog() == DialogResult.OK) {
-                this.Text = string.Format("TW Admin [TW08]");
+                this.Text = string.Format($"TW Admin [{dialog.Database.connectedUser}]");
             }
             else {
                 this.Close();
                 return;
             }
-            normalFont = new Font("arial",10);
-            boldFont = new Font(normalFont,FontStyle.Bold);
-            configRoles = XElement.Load(@"FormRoles.xml");
             db = dialog.Database;
-            setValidRoles();
+            allRoles = Role.GetAllTWRoles(db);
             initTabs();
             initUsersTable();
+            Task.Factory.StartNew(() => users.ForEach(u => u.GetGrantedRoles()));
         }
 
         private void initTabs() {
-            foreach(var appRoles in configRoles.Elements()) {
-                var tab = new TabPage(appRoles.Name.LocalName);
-                tab.Name = appRoles.Name.LocalName;
+            var appNames = allRoles.Select(r => r.AppName).Distinct();
+            foreach(var appName in appNames) {
+                var tab = new TabPage(appName);
+                tab.Name = appName;
                 tabs.Controls.Add(tab);
                 var flow = new FlowLayoutPanel();
                 flow.Dock = DockStyle.Fill;
@@ -64,185 +64,191 @@ namespace tw_app
                 var menuItem = cmUsers.Items.Add(tab.Name) as ToolStripMenuItem;
                 menuItem.CheckOnClick = true;
                 menuItem.Checked = false;
-                menuItem.Click += MenuItem_Click; ;
+                menuItem.Click += menuItem_Click;
+                flow.ContextMenuStrip = cmSelect;
                 flow.SuspendLayout();
-                foreach(var roleGroup in appRoles.Elements()) {
+                var groupNames = allRoles.Where(r => r.AppName == appName)
+                    .Select(r => r.GroupName).Distinct();
+                foreach(var groupName in groupNames) {
                     var label = new Label();
                     label.AutoSize = true;
-                    label.Text = roleGroup.Name.LocalName;
+                    label.Text = groupName;
                     label.Font = boldFont;
                     flow.Controls.Add(label);
-                    foreach(var role in roleGroup.Elements())
-                        if(validRoles.Contains(role.Name.LocalName)) {
-                            var cb = new CheckBox();
-                            cb.AutoCheck = false;
-                            cb.Name = role.Name.LocalName;
-                            cb.Font = normalFont;
-                            cb.Margin = new Padding(20, 0, 0, 0);
-                            cb.AutoSize = true;
-                            cb.Text = role.Value;
-                            flow.Controls.Add(cb);
-                            allCheckBoxes.Add(cb);
-                            cb.Tag = tab;
-                            cb.CheckedChanged += Cb_CheckedChanged;
-                        }
+                    var groupRoles = allRoles.Where(r => r.AppName == appName
+                        && r.GroupName == groupName).Distinct();
+                    foreach(var role in groupRoles) {
+                        var cb = new CheckBox();
+                        cb.AutoCheck = false;
+                        cb.Name = role.Name;
+                        cb.Tag = role;
+                        cb.Font = normalFont;
+                        cb.Margin = new Padding(20, 0, 0, 0);
+                        cb.AutoSize = true;
+                        cb.Text = role.Title;
+                        cb.CheckedChanged += checkBox_CheckedChanged;
+                        flow.Controls.Add(cb);
+                    }
                 }
                 flow.ResumeLayout();
                 flow.PerformLayout();
-                flow.MouseEnter += Flow_MouseEnter;
-            }      
+                flow.MouseEnter += flow_MouseEnter;
+            }
         }
 
-        private void MenuItem_Click(object sender, EventArgs e) {
+        private void menuItem_Click(object sender, EventArgs e) {
             var menuItem = sender as ToolStripMenuItem;
-            foreach(ToolStripMenuItem item in cmUsers.Items) {
+            foreach(ToolStripMenuItem item in cmUsers.Items)
                 item.Checked = item == menuItem;
-            }
             if(menuItem == allToolStripMenuItem)
                 initUsersTable();
             else {
-                var appRoles = roleTree[menuItem.Text];
-                usersGridView.SuspendLayout();
-                usersGridView.Rows.Clear();
-                foreach(User user in users) {
-                    var roles = db.GetUserRoles(user.Username);
-                    if(roles.Exists(r=>appRoles.Contains(r)))
-                        usersGridView.Rows.Add(user.Username, user.Fullname);
-                }
-                usersGridView.ResumeLayout();
+                var watch = Stopwatch.StartNew();
+                var appName = menuItem.Text;
+                gvUsers.Rows.Clear();
+                var appUsers = users.Where(u => u.GetGrantedRoles()
+                    .Exists(r => r.AppName == appName)).ToList();
+                foreach(User user in appUsers)
+                    gvUsers.Rows.Add(user.Username, user.Fullname);
+                watch.Stop();
+                Debug.WriteLine($"Elapsed time = {watch.Elapsed}");
             }
         }
 
-        private void Flow_MouseEnter(object sender, EventArgs e) {
+        private void flow_MouseEnter(object sender, EventArgs e) {
             var flow = sender as FlowLayoutPanel;
             flow.Focus();
         }
 
-        private void Cb_CheckedChanged(object sender, EventArgs e) {
+        private void checkBox_CheckedChanged(object sender, EventArgs e) {
             var cb = sender as CheckBox;
-            cb.ForeColor = cb.Checked ? Color.DarkRed :
-                Color.FromKnownColor(KnownColor.ControlText);
-            if(cb.Checked && !editedUserRoles.Contains(cb.Name)) {
-                editedUserRoles.Add(cb.Name);
+            var role = cb.Tag as Role;
+            cb.ForeColor = cb.Checked ? checkedColor : uncheckedColor;
+            if(!btnEdit.Enabled) {
+                if(cb.Checked && !editedUserRoles.Contains(role))
+                    editedUserRoles.Add(role);
+                if(!cb.Checked && editedUserRoles.Contains(cb.Tag))
+                    editedUserRoles.Remove(role);
+                if(!btnEdit.Enabled)
+                    btnSave.Enabled = editedUserRoles.Exists(r => !loadedUserRoles.Contains(r)) ||
+                        loadedUserRoles.Exists(r => !editedUserRoles.Contains(r));
+                updateTabStats(tabs.SelectedTab);
             }
-            if(!cb.Checked && editedUserRoles.Contains(cb.Name)) {
-                editedUserRoles.Remove(cb.Name);
-            }
-            if(!edit_sbtn.Enabled)
-                save_sbtn.Enabled = editedUserRoles.Except(loadedUserRoles).Count() > 0 ||
-                    loadedUserRoles.Except(editedUserRoles).Count() > 0;
-            updateStats();
         }
 
-        void updateStats() {
+        void updateTabStats(TabPage tab) {
+            var flow = tab.Controls[0] as FlowLayoutPanel;
+            int checkedCount = flow.Controls.OfType<CheckBox>().Count(cb => cb.Checked);
+            tab.Text = checkedCount > 0 ? $"{tab.Name} ({checkedCount})" : $"{tab.Name}";
+        }
+
+
+        private void initUsersTable() {
+            users = User.GetUsersList(db);
+            users.Sort();
+            gvUsers.Rows.Clear();
+            foreach(var user in users)
+                gvUsers.Rows.Add(user.Username, user.Fullname);
+        }
+
+        private void gvUsers_RowEnter(object sender, DataGridViewCellEventArgs e) {
+            var username = gvUsers.Rows[e.RowIndex].Cells[0].Value as string;
+            if(selectedUser == null || selectedUser.Username != username)
+                selectUser(username);
+        }
+
+        private void selectUser(string username) {
+            selectedUser = users.FindByName(username);
+            loadedUserRoles = selectedUser.GetGrantedRoles();
+            selectCheckBoxes(loadedUserRoles);
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e) {
+            gvUsers.Enabled = false;
+            btnCancel.Enabled = true;
+            btnEdit.Enabled = false;
+            btnCopy.Enabled = true;
+            cmSelect.Enabled = true;
             foreach(var tab in tabs.Controls.OfType<TabPage>()) {
                 var flow = tab.Controls[0] as FlowLayoutPanel;
-                int checkedCount = flow.Controls.OfType<CheckBox>().Count(cb => cb.Checked);
-                tab.Text = checkedCount > 0 ? $"{tab.Name} ({checkedCount})" : $"{tab.Name}";
+                flow.Controls.OfType<CheckBox>().ToList()
+                    .ForEach(cb => cb.AutoCheck = true);
             }
         }
-        private void setValidRoles()
-        {            
-            validRoles = db.GetAllRoles();
-            List<string> configValidRoles = new List<string>();
-            foreach(var appRoles in configRoles.Elements()) {
-                roleTree[appRoles.Name.LocalName] = new List<string>();
-                foreach(var roleGroup in appRoles.Elements())
-                    foreach(var role in roleGroup.Elements()) {
-                        configValidRoles.Add(role.Name.LocalName);
-                        roleTree[appRoles.Name.LocalName].Add(role.Name.LocalName);
-                    }
-            }
-            validRoles.RemoveAll(role => !configValidRoles.Contains(role));
-        }
 
-        private void initUsersTable()
-        {
-            users = db.GetUsersList();
-            users.Sort((user1,user2)=>user1.Username.CompareTo(user2.Username));
-            usersGridView.SuspendLayout();
-            usersGridView.Rows.Clear();
-            foreach (var user in users)
-                usersGridView.Rows.Add(user.Username,user.Fullname);
-            usersGridView.ResumeLayout();
-        }
-
-        private void usersGridView_RowEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            var user = usersGridView.Rows[e.RowIndex].Cells[0].Value as string;
-            if(user!=selectedUser)
-                selectUser(user);
-        }
-
-        private void selectUser(string user)
-        {
-            selectedUser = user;
-            loadedUserRoles = db.GetUserRoles(selectedUser);
-            loadedUserRoles.RemoveAll(role => !validRoles.Contains(role));
-            editedUserRoles = loadedUserRoles.ToList();
-            var flow = tabs.SelectedTab.Controls[0] as FlowLayoutPanel;
-            allCheckBoxes.ForEach(cb => cb.Checked = loadedUserRoles.Contains(cb.Name));
-            updateStats();
-        }
-
-        private void edit_sbtn_Click(object sender, EventArgs e)
-        {
-            usersGridView.Enabled = false;
-            cancel_sbtn.Enabled = true;
-            edit_sbtn.Enabled = false;
-            //save_sbtn.Enabled = true;
-            copy_sbtn.Enabled = true;
-            allCheckBoxes.ForEach(cb => cb.AutoCheck = true);
-        }
-
-        private void save_sbtn_Click(object sender, EventArgs e)
-        {
-            if(MessageBox.Show("Save","Save changes!",MessageBoxButtons.OKCancel)==DialogResult.OK)
-            {
+        private void btnSave_Click(object sender, EventArgs e) {
+            if(MessageBox.Show($"Do you want to save changes to '{selectedUser}'?",
+                "Save Changes", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK) {
                 saveUserRoles();
             }
-            selectUser(selectedUser);
-            usersGridView.Enabled = true;
-            cancel_sbtn.Enabled = false;
-            edit_sbtn.Enabled = true;
-            save_sbtn.Enabled = false;
-            copy_sbtn.Enabled = false;
-            allCheckBoxes.ForEach(cb => cb.AutoCheck = false);
-        }
-
-        private void saveUserRoles()
-        {
-            editedUserRoles.Select(role => !loadedUserRoles.Contains(role));
-            editedUserRoles.Except(loadedUserRoles).ToList()
-                .ForEach(role => db.addRoleToUser(selectedUser, role));
-            loadedUserRoles.Except(editedUserRoles).ToList()
-                .ForEach(role => db.removeRoleFromUser(selectedUser, role));
-        }
-
-        private void cancel_sbtn_Click(object sender, EventArgs e)
-        {
-            usersGridView.Enabled = true;
-            edit_sbtn.Enabled = true;
-            cancel_sbtn.Enabled = false;
-            save_sbtn.Enabled = false;
-            copy_sbtn.Enabled = false;
-            allCheckBoxes.ForEach(cb => cb.AutoCheck = false);
-            selectUser(selectedUser);
-        }
-
-        private void copy_sbtn_Click(object sender, EventArgs e)
-        {
-            CopyForm form = new CopyForm(users);
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                var copiedRoles = db.GetUserRoles(form.selectedUser);
-                editedUserRoles = copiedRoles.ToList();
-                allCheckBoxes.ForEach(cb => cb.Checked = copiedRoles.Contains(cb.Name));
+            selectUser(selectedUser.Username);
+            gvUsers.Enabled = true;
+            btnCancel.Enabled = false;
+            btnEdit.Enabled = true;
+            btnSave.Enabled = false;
+            btnCopy.Enabled = false;
+            cmSelect.Enabled = false;
+            foreach(var tab in tabs.Controls.OfType<TabPage>()) {
+                var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.Controls.OfType<CheckBox>().ToList()
+                    .ForEach(cb => cb.AutoCheck = false);
             }
         }
 
-        private void usersGridView_MouseEnter(object sender, EventArgs e) {
-            usersGridView.Focus();
+        private void saveUserRoles() {
+            editedUserRoles.Except(loadedUserRoles).ToList()
+                .ForEach(role => selectedUser.addRoleToUser(role));
+            loadedUserRoles.Except(editedUserRoles).ToList()
+                .ForEach(role => selectedUser.removeRoleFromUser(role));
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e) {
+            gvUsers.Enabled = true;
+            btnEdit.Enabled = true;
+            btnCancel.Enabled = false;
+            btnSave.Enabled = false;
+            btnCopy.Enabled = false;
+            cmSelect.Enabled = false;
+            selectUser(selectedUser.Username);
+            foreach(var tab in tabs.Controls.OfType<TabPage>()) {
+                var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.Controls.OfType<CheckBox>().ToList()
+                    .ForEach(cb => cb.AutoCheck = false);
+            }
+        }
+
+        private void btnCopy_Click(object sender, EventArgs e) {
+            CopyForm form = new CopyForm(users);
+            if(form.ShowDialog() == DialogResult.OK) {
+                var fromUser = users.Find(u => u.Username == form.selectedUser);
+                var copiedRoles = fromUser.GetGrantedRoles();
+                selectCheckBoxes(copiedRoles);
+            }
+        }
+
+        private void gvUsers_MouseEnter(object sender, EventArgs e) {
+            gvUsers.Focus();
+        }
+
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e) {
+            var flow = tabs.SelectedTab.Controls[0] as FlowLayoutPanel;
+            flow.Controls.OfType<CheckBox>().ToList().ForEach(cb => cb.Checked = true);
+        }
+
+        private void deselectAllToolStripMenuItem_Click(object sender, EventArgs e) {
+            var flow = tabs.SelectedTab.Controls[0] as FlowLayoutPanel;
+            flow.Controls.OfType<CheckBox>().ToList().ForEach(cb => cb.Checked = false);
+        }
+
+        private void selectCheckBoxes(List<Role> roles) {
+            editedUserRoles = roles.ToList();
+            foreach(var tab in tabs.Controls.OfType<TabPage>()) {
+                var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.Controls.OfType<CheckBox>().ToList()
+                    .ForEach(cb => cb.Checked = editedUserRoles.Contains(cb.Tag));
+            }
+            foreach(var tab in tabs.Controls.OfType<TabPage>())
+                updateTabStats(tab);
         }
     }
 }

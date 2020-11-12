@@ -32,7 +32,7 @@ namespace tw_app
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.usersGridView = new System.Windows.Forms.DataGridView();
+            this.gvUsers = new System.Windows.Forms.DataGridView();
             this.username_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fullname_cl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmUsers = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -40,42 +40,46 @@ namespace tw_app
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabs = new System.Windows.Forms.TabControl();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.edit_sbtn = new System.Windows.Forms.ToolStripButton();
+            this.btnEdit = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.cancel_sbtn = new System.Windows.Forms.ToolStripButton();
+            this.btnCancel = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.save_sbtn = new System.Windows.Forms.ToolStripButton();
+            this.btnSave = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.copy_sbtn = new System.Windows.Forms.ToolStripButton();
+            this.btnCopy = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            ((System.ComponentModel.ISupportInitialize)(this.usersGridView)).BeginInit();
+            this.cmSelect = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deselectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ((System.ComponentModel.ISupportInitialize)(this.gvUsers)).BeginInit();
             this.cmUsers.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.cmSelect.SuspendLayout();
             this.SuspendLayout();
             // 
             // usersGridView
             // 
-            this.usersGridView.AllowUserToAddRows = false;
-            this.usersGridView.AllowUserToDeleteRows = false;
-            this.usersGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.usersGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.gvUsers.AllowUserToAddRows = false;
+            this.gvUsers.AllowUserToDeleteRows = false;
+            this.gvUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.username_cl,
             this.fullname_cl});
-            this.usersGridView.ContextMenuStrip = this.cmUsers;
-            this.usersGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.usersGridView.Location = new System.Drawing.Point(0, 0);
-            this.usersGridView.Name = "usersGridView";
-            this.usersGridView.ReadOnly = true;
-            this.usersGridView.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            this.usersGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.usersGridView.Size = new System.Drawing.Size(344, 560);
-            this.usersGridView.TabIndex = 3;
-            this.usersGridView.RowEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.usersGridView_RowEnter);
-            this.usersGridView.MouseEnter += new System.EventHandler(this.usersGridView_MouseEnter);
+            this.gvUsers.ContextMenuStrip = this.cmUsers;
+            this.gvUsers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gvUsers.Location = new System.Drawing.Point(0, 0);
+            this.gvUsers.Name = "usersGridView";
+            this.gvUsers.ReadOnly = true;
+            this.gvUsers.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.gvUsers.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvUsers.Size = new System.Drawing.Size(344, 560);
+            this.gvUsers.TabIndex = 3;
+            this.gvUsers.RowEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvUsers_RowEnter);
+            this.gvUsers.MouseEnter += new System.EventHandler(this.gvUsers_MouseEnter);
             // 
             // username_cl
             // 
@@ -99,7 +103,7 @@ namespace tw_app
             this.cmUsers.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.allToolStripMenuItem});
             this.cmUsers.Name = "cmUsers";
-            this.cmUsers.Size = new System.Drawing.Size(153, 48);
+            this.cmUsers.Size = new System.Drawing.Size(89, 26);
             // 
             // allToolStripMenuItem
             // 
@@ -107,9 +111,9 @@ namespace tw_app
             this.allToolStripMenuItem.CheckOnClick = true;
             this.allToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.allToolStripMenuItem.Name = "allToolStripMenuItem";
-            this.allToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.allToolStripMenuItem.Size = new System.Drawing.Size(88, 22);
             this.allToolStripMenuItem.Text = "All";
-            this.allToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
+            this.allToolStripMenuItem.Click += new System.EventHandler(this.menuItem_Click);
             // 
             // splitContainer1
             // 
@@ -119,7 +123,7 @@ namespace tw_app
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.usersGridView);
+            this.splitContainer1.Panel1.Controls.Add(this.gvUsers);
             // 
             // splitContainer1.Panel2
             // 
@@ -141,13 +145,13 @@ namespace tw_app
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.edit_sbtn,
+            this.btnEdit,
             this.toolStripSeparator1,
-            this.cancel_sbtn,
+            this.btnCancel,
             this.toolStripSeparator4,
-            this.save_sbtn,
+            this.btnSave,
             this.toolStripSeparator2,
-            this.copy_sbtn,
+            this.btnCopy,
             this.toolStripSeparator3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -157,13 +161,13 @@ namespace tw_app
             // 
             // edit_sbtn
             // 
-            this.edit_sbtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.edit_sbtn.Image = ((System.Drawing.Image)(resources.GetObject("edit_sbtn.Image")));
-            this.edit_sbtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.edit_sbtn.Name = "edit_sbtn";
-            this.edit_sbtn.Size = new System.Drawing.Size(31, 22);
-            this.edit_sbtn.Text = "Edit";
-            this.edit_sbtn.Click += new System.EventHandler(this.edit_sbtn_Click);
+            this.btnEdit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnEdit.Image = ((System.Drawing.Image)(resources.GetObject("edit_sbtn.Image")));
+            this.btnEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnEdit.Name = "edit_sbtn";
+            this.btnEdit.Size = new System.Drawing.Size(31, 22);
+            this.btnEdit.Text = "Edit";
+            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
             // 
             // toolStripSeparator1
             // 
@@ -172,14 +176,14 @@ namespace tw_app
             // 
             // cancel_sbtn
             // 
-            this.cancel_sbtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.cancel_sbtn.Enabled = false;
-            this.cancel_sbtn.Image = ((System.Drawing.Image)(resources.GetObject("cancel_sbtn.Image")));
-            this.cancel_sbtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.cancel_sbtn.Name = "cancel_sbtn";
-            this.cancel_sbtn.Size = new System.Drawing.Size(47, 22);
-            this.cancel_sbtn.Text = "Cancel";
-            this.cancel_sbtn.Click += new System.EventHandler(this.cancel_sbtn_Click);
+            this.btnCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnCancel.Enabled = false;
+            this.btnCancel.Image = ((System.Drawing.Image)(resources.GetObject("cancel_sbtn.Image")));
+            this.btnCancel.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCancel.Name = "cancel_sbtn";
+            this.btnCancel.Size = new System.Drawing.Size(47, 22);
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // toolStripSeparator4
             // 
@@ -188,14 +192,14 @@ namespace tw_app
             // 
             // save_sbtn
             // 
-            this.save_sbtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.save_sbtn.Enabled = false;
-            this.save_sbtn.Image = ((System.Drawing.Image)(resources.GetObject("save_sbtn.Image")));
-            this.save_sbtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.save_sbtn.Name = "save_sbtn";
-            this.save_sbtn.Size = new System.Drawing.Size(35, 22);
-            this.save_sbtn.Text = "Save";
-            this.save_sbtn.Click += new System.EventHandler(this.save_sbtn_Click);
+            this.btnSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnSave.Enabled = false;
+            this.btnSave.Image = ((System.Drawing.Image)(resources.GetObject("save_sbtn.Image")));
+            this.btnSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSave.Name = "save_sbtn";
+            this.btnSave.Size = new System.Drawing.Size(35, 22);
+            this.btnSave.Text = "Save";
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // toolStripSeparator2
             // 
@@ -204,19 +208,42 @@ namespace tw_app
             // 
             // copy_sbtn
             // 
-            this.copy_sbtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.copy_sbtn.Enabled = false;
-            this.copy_sbtn.Image = ((System.Drawing.Image)(resources.GetObject("copy_sbtn.Image")));
-            this.copy_sbtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.copy_sbtn.Name = "copy_sbtn";
-            this.copy_sbtn.Size = new System.Drawing.Size(39, 22);
-            this.copy_sbtn.Text = "Copy";
-            this.copy_sbtn.Click += new System.EventHandler(this.copy_sbtn_Click);
+            this.btnCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnCopy.Enabled = false;
+            this.btnCopy.Image = ((System.Drawing.Image)(resources.GetObject("copy_sbtn.Image")));
+            this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCopy.Name = "copy_sbtn";
+            this.btnCopy.Size = new System.Drawing.Size(39, 22);
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // cmSelect
+            // 
+            this.cmSelect.Enabled = false;
+            this.cmSelect.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectAllToolStripMenuItem,
+            this.deselectAllToolStripMenuItem});
+            this.cmSelect.Name = "cmSelect";
+            this.cmSelect.Size = new System.Drawing.Size(136, 48);
+            // 
+            // selectAllToolStripMenuItem
+            // 
+            this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.selectAllToolStripMenuItem.Text = "Select All";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+            // 
+            // deselectAllToolStripMenuItem
+            // 
+            this.deselectAllToolStripMenuItem.Name = "deselectAllToolStripMenuItem";
+            this.deselectAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deselectAllToolStripMenuItem.Text = "Deselect All";
+            this.deselectAllToolStripMenuItem.Click += new System.EventHandler(this.deselectAllToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -224,10 +251,11 @@ namespace tw_app
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1034, 560);
             this.Controls.Add(this.splitContainer1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.Load += new System.EventHandler(this.MainForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.usersGridView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvUsers)).EndInit();
             this.cmUsers.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -236,27 +264,31 @@ namespace tw_app
             this.splitContainer1.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.cmSelect.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private System.Windows.Forms.DataGridView usersGridView;
+        private System.Windows.Forms.DataGridView gvUsers;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripButton edit_sbtn;
+        private System.Windows.Forms.ToolStripButton btnEdit;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton save_sbtn;
+        private System.Windows.Forms.ToolStripButton btnSave;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton copy_sbtn;
+        private System.Windows.Forms.ToolStripButton btnCopy;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton cancel_sbtn;
+        private System.Windows.Forms.ToolStripButton btnCancel;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private TabControl tabs;
         private ContextMenuStrip cmUsers;
         private ToolStripMenuItem allToolStripMenuItem;
         private DataGridViewTextBoxColumn username_cl;
         private DataGridViewTextBoxColumn fullname_cl;
+        private ContextMenuStrip cmSelect;
+        private ToolStripMenuItem selectAllToolStripMenuItem;
+        private ToolStripMenuItem deselectAllToolStripMenuItem;
     }
 }
 
