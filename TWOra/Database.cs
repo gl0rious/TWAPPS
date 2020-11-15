@@ -18,7 +18,7 @@ namespace TWOra
     {
         OracleConnection connection;
         public string LastError;
-        public string connectedUser;
+        public User connectedUser;
 
         public bool Connect() {
             if(connection == null)
@@ -34,7 +34,7 @@ namespace TWOra
                     return false;
                 }
             }
-            connectedUser = ConnectionSetting.Username;
+            connectedUser = User.GetConnectedUser(this);
             return true;
         }
         

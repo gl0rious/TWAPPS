@@ -14,7 +14,6 @@ using TWOra;
 namespace tw_app {
     public partial class MainForm : Form {
         Database db;
-        List<Role> loadedUserRoles;
         List<Role> editedUserRoles;
         List<Role> allRoles;
         List<User> users;
@@ -34,14 +33,18 @@ namespace tw_app {
 
         private void MainForm_Load(object sender, EventArgs e) {
             ConnectForm dialog = new ConnectForm();
-            if(dialog.ShowDialog() == DialogResult.OK) {
-                this.Text = string.Format($"TW Admin [{dialog.Database.connectedUser}]");
-            }
+            if(dialog.ShowDialog() == DialogResult.OK)
+                this.Text = string.Format($"TW Admin [{dialog.Database.connectedUser.Username}]");
             else {
                 this.Close();
                 return;
             }
             db = dialog.Database;
+            if(!db.connectedUser.isDBA()) {
+                MessageBox.Show($"'{db.connectedUser.Username}' is not BDA");
+                this.Close();
+                return;
+            }
             allRoles = Role.GetAllTWRoles(db);
             initTabs();
             initUsersTable();
@@ -103,15 +106,12 @@ namespace tw_app {
             if(menuItem == allToolStripMenuItem)
                 initUsersTable();
             else {
-                var watch = Stopwatch.StartNew();
                 var appName = menuItem.Text;
                 gvUsers.Rows.Clear();
                 var appUsers = users.Where(u => u.GetGrantedRoles()
                     .Exists(r => r.AppName == appName)).ToList();
                 foreach(User user in appUsers)
                     gvUsers.Rows.Add(user.Username, user.Fullname);
-                watch.Stop();
-                Debug.WriteLine($"Elapsed time = {watch.Elapsed}");
             }
         }
 
@@ -130,8 +130,9 @@ namespace tw_app {
                 if(!cb.Checked && editedUserRoles.Contains(cb.Tag))
                     editedUserRoles.Remove(role);
                 if(!btnEdit.Enabled)
-                    btnSave.Enabled = editedUserRoles.Exists(r => !loadedUserRoles.Contains(r)) ||
-                        loadedUserRoles.Exists(r => !editedUserRoles.Contains(r));
+                    btnSave.Enabled = editedUserRoles.Exists(
+                        r => !selectedUser.GetGrantedRoles().Contains(r)) ||
+                        selectedUser.GetGrantedRoles().Exists(r => !editedUserRoles.Contains(r));
                 updateTabStats(tabs.SelectedTab);
             }
         }
@@ -154,13 +155,12 @@ namespace tw_app {
         private void gvUsers_RowEnter(object sender, DataGridViewCellEventArgs e) {
             var username = gvUsers.Rows[e.RowIndex].Cells[0].Value as string;
             if(selectedUser == null || selectedUser.Username != username)
-                selectUser(username);
+                selectUser(users.FindByName(username));
         }
 
-        private void selectUser(string username) {
-            selectedUser = users.FindByName(username);
-            loadedUserRoles = selectedUser.GetGrantedRoles();
-            selectCheckBoxes(loadedUserRoles);
+        private void selectUser(User user) {
+            selectedUser = user;
+            selectCheckBoxes(selectedUser.GetGrantedRoles());
         }
 
         private void btnEdit_Click(object sender, EventArgs e) {
@@ -177,11 +177,11 @@ namespace tw_app {
         }
 
         private void btnSave_Click(object sender, EventArgs e) {
-            if(MessageBox.Show($"Do you want to save changes to '{selectedUser}'?",
+            if(MessageBox.Show($"Do you want to save changes to '{selectedUser.Username}'?",
                 "Save Changes", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK) {
                 saveUserRoles();
             }
-            selectUser(selectedUser.Username);
+            selectUser(selectedUser);
             gvUsers.Enabled = true;
             btnCancel.Enabled = false;
             btnEdit.Enabled = true;
@@ -196,9 +196,9 @@ namespace tw_app {
         }
 
         private void saveUserRoles() {
-            editedUserRoles.Except(loadedUserRoles).ToList()
+            editedUserRoles.Except(selectedUser.GetGrantedRoles()).ToList()
                 .ForEach(role => selectedUser.addRoleToUser(role));
-            loadedUserRoles.Except(editedUserRoles).ToList()
+            selectedUser.GetGrantedRoles().Except(editedUserRoles).ToList()
                 .ForEach(role => selectedUser.removeRoleFromUser(role));
         }
 
@@ -209,7 +209,7 @@ namespace tw_app {
             btnSave.Enabled = false;
             btnCopy.Enabled = false;
             cmSelect.Enabled = false;
-            selectUser(selectedUser.Username);
+            selectUser(selectedUser);
             foreach(var tab in tabs.Controls.OfType<TabPage>()) {
                 var flow = tab.Controls[0] as FlowLayoutPanel;
                 flow.Controls.OfType<CheckBox>().ToList()

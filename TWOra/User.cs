@@ -91,6 +91,36 @@ namespace TWOra {
             return users;
         }
 
+        public static User GetConnectedUser(Database db) {
+            var connectedUsername = ConnectionSetting.Username;
+            if(users != null)
+                return users.Find(u => u.Username == connectedUsername);
+            var rd = db.execute($@"
+                SELECT
+                  d.USERNAME,
+                  u.utilis,
+                  d.ACCOUNT_STATUS
+                FROM
+                  dba_users d
+                LEFT JOIN utilisateur_app u
+                ON
+                  u.nom_utilis = d.username
+                where d.username = '{connectedUsername.ToUpper()}'
+            ");
+            if(rd.Read()) {
+                string username = rd["username"].ToString();
+                string fullname = rd["utilis"].ToString();
+                UserState state = User.Statefrom(rd["ACCOUNT_STATUS"].ToString());
+                return new User {
+                    db = db,
+                    Username = username,
+                    Fullname = fullname,
+                    State = state
+                };
+            }
+            return null;
+        }
+
         public override bool Equals(object obj) {
             if(obj is User) {
                 var other = obj as User;
@@ -102,6 +132,10 @@ namespace TWOra {
         public int CompareTo(object obj) {
             var other = obj as User;
             return Username.CompareTo(other.Username);
+        }
+
+        public override int GetHashCode() {
+            return Username.GetHashCode();
         }
 
         public bool isDBA() {
