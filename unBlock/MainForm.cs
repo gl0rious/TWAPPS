@@ -26,21 +26,43 @@ namespace unBlock
             if(form.ShowDialog()!=DialogResult.OK)
                 Close();
             db = form.Database;
-            fillGrid();
+            var apps = Role.AllTWRoles(db).Select(r => r.AppName).Distinct();
+            cbApps.Items.Add("All");
+            foreach(var app in apps)
+                cbApps.Items.Add(app);
+            cbApps.SelectedIndex = 0;
         }
 
         void fillGrid() {
-            dataGridView1.Rows.Clear();
-            var users = db.GetUsersList();
-            var sessions = db.GetUserSessions();
-            foreach(var user in users) {
-                if(sessions.Exists(s=>s.Username==user.Username))
-                    dataGridView1.Rows.Add(
+            gvUsers.Rows.Clear();
+            var sessions = Session.AllSessions(db);
+            foreach(var user in sessions.Select(s=>s.User).Distinct()) {
+                    gvUsers.Rows.Add(
                         false, 
                         user.Username, 
                         user.Fullname,
-                        sessions.Count(s => s.Username == user.Username),
-                        user.State.ToString());
+                        sessions.Count(s => s.User.Username == user.Username),
+                        user.State.ToString(),
+                        sessions.Where(s=>s.User==user).Select(s=>s.LogonTime).Max());
+            }
+        }
+
+        private void cbApps_SelectedIndexChanged(object sender, EventArgs e) {
+            gvUsers.Rows.Clear();
+            var sessions = Session.AllSessions(db);
+            var users = sessions.Select(s => s.User).Distinct();
+            var app = (string)cbApps.SelectedItem;
+
+            if(app != "All")
+                users = users.Where(u => u.GetGrantedRoles().Exists(r => r.AppName == app));
+            foreach(var user in users) {
+                gvUsers.Rows.Add(
+                    false,
+                    user.Username,
+                    user.Fullname,
+                    sessions.Count(s => s.User.Username == user.Username),
+                    user.State.ToString(),
+                    sessions.Where(s => s.User == user).Select(s => s.LogonTime).Max());
             }
         }
     }

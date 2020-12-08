@@ -6,6 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -15,9 +16,12 @@ namespace tw_app {
     public partial class MainForm : Form {
         Database db;
         List<Role> editedUserRoles;
+        List<string> allApps;
         List<Role> allRoles;
-        List<User> users;
+        List<User> allUsers;
+        List<Session> allSessions;
         User selectedUser;
+
         Font normalFont;
         Font boldFont;
         Color checkedColor;
@@ -34,26 +38,34 @@ namespace tw_app {
         private void MainForm_Load(object sender, EventArgs e) {
             ConnectForm dialog = new ConnectForm();
             if(dialog.ShowDialog() == DialogResult.OK)
-                this.Text = string.Format($"TW Admin [{dialog.Database.connectedUser.Username}]");
+                this.Text = string.Format($"TW Admin [{ConnectionSetting.Username}]");
             else {
                 this.Close();
                 return;
             }
             db = dialog.Database;
-            if(!db.connectedUser.isDBA()) {
-                MessageBox.Show($"'{db.connectedUser.Username}' is not BDA");
+            if(!db.isDBASession()) {
+                MessageBox.Show($"'{ConnectionSetting.Username}' is not BDA");
                 this.Close();
                 return;
             }
-            allRoles = Role.GetAllTWRoles(db);
+            allRoles = Role.AllTWRoles(db);
+            allApps = allRoles.Select(r => r.AppName).Distinct().ToList();
+            allUsers = User.AllUsers(db);
+            allUsers.Sort();
+            Task.Factory.StartNew(() => {
+                allUsers.ForEach(u => u.GetGrantedRoles());
+                cbApps.Invoke(new Action(()=>{ cbApps.Enabled = true; }));
+            });
+            cbApps.Enabled = false;
+            cbApps.Items.AddRange(new string[]{"ALL"}.Concat(allApps).ToArray());
+            cbApps.SelectedIndex = 0;
             initTabs();
-            initUsersTable();
-            Task.Factory.StartNew(() => users.ForEach(u => u.GetGrantedRoles()));
+            cbStates.SelectedIndex = 0;
         }
 
         private void initTabs() {
-            var appNames = allRoles.Select(r => r.AppName).Distinct();
-            foreach(var appName in appNames) {
+            foreach(var appName in allApps) {
                 var tab = new TabPage(appName);
                 tab.Name = appName;
                 tabs.Controls.Add(tab);
@@ -64,11 +76,6 @@ namespace tw_app {
                 flow.AutoScroll = true;
                 flow.AutoSize = true;
                 tab.Controls.Add(flow);
-                var menuItem = cmUsers.Items.Add(tab.Name) as ToolStripMenuItem;
-                menuItem.CheckOnClick = true;
-                menuItem.Checked = false;
-                menuItem.Click += menuItem_Click;
-                flow.ContextMenuStrip = cmSelect;
                 flow.SuspendLayout();
                 var groupNames = allRoles.Where(r => r.AppName == appName)
                     .Select(r => r.GroupName).Distinct();
@@ -99,22 +106,6 @@ namespace tw_app {
             }
         }
 
-        private void menuItem_Click(object sender, EventArgs e) {
-            var menuItem = sender as ToolStripMenuItem;
-            foreach(ToolStripMenuItem item in cmUsers.Items)
-                item.Checked = item == menuItem;
-            if(menuItem == allToolStripMenuItem)
-                initUsersTable();
-            else {
-                var appName = menuItem.Text;
-                gvUsers.Rows.Clear();
-                var appUsers = users.Where(u => u.GetGrantedRoles()
-                    .Exists(r => r.AppName == appName)).ToList();
-                foreach(User user in appUsers)
-                    gvUsers.Rows.Add(user.Username, user.Fullname);
-            }
-        }
-
         private void flow_MouseEnter(object sender, EventArgs e) {
             var flow = sender as FlowLayoutPanel;
             flow.Focus();
@@ -129,7 +120,7 @@ namespace tw_app {
                     editedUserRoles.Add(role);
                 if(!cb.Checked && editedUserRoles.Contains(cb.Tag))
                     editedUserRoles.Remove(role);
-                if(!btnEdit.Enabled)
+                if(!btnEdit.Enabled && selectedUser != null)
                     btnSave.Enabled = editedUserRoles.Exists(
                         r => !selectedUser.GetGrantedRoles().Contains(r)) ||
                         selectedUser.GetGrantedRoles().Exists(r => !editedUserRoles.Contains(r));
@@ -143,24 +134,11 @@ namespace tw_app {
             tab.Text = checkedCount > 0 ? $"{tab.Name} ({checkedCount})" : $"{tab.Name}";
         }
 
-
-        private void initUsersTable() {
-            users = User.GetUsersList(db);
-            users.Sort();
-            gvUsers.Rows.Clear();
-            foreach(var user in users)
-                gvUsers.Rows.Add(user.Username, user.Fullname);
-        }
-
-        private void gvUsers_RowEnter(object sender, DataGridViewCellEventArgs e) {
-            var username = gvUsers.Rows[e.RowIndex].Cells[0].Value as string;
-            if(selectedUser == null || selectedUser.Username != username)
-                selectUser(users.FindByName(username));
-        }
-
         private void selectUser(User user) {
             selectedUser = user;
-            selectCheckBoxes(selectedUser.GetGrantedRoles());
+            lblUser.Text = user != null ? $"{user.Username} : {user.Fullname}" : "";
+            var roles = selectedUser != null? selectedUser.GetGrantedRoles():new List<Role>();
+            selectCheckBoxes(roles);
         }
 
         private void btnEdit_Click(object sender, EventArgs e) {
@@ -168,9 +146,9 @@ namespace tw_app {
             btnCancel.Enabled = true;
             btnEdit.Enabled = false;
             btnCopy.Enabled = true;
-            cmSelect.Enabled = true;
             foreach(var tab in tabs.Controls.OfType<TabPage>()) {
                 var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.ContextMenuStrip = cmSelect;
                 flow.Controls.OfType<CheckBox>().ToList()
                     .ForEach(cb => cb.AutoCheck = true);
             }
@@ -187,9 +165,9 @@ namespace tw_app {
             btnEdit.Enabled = true;
             btnSave.Enabled = false;
             btnCopy.Enabled = false;
-            cmSelect.Enabled = false;
             foreach(var tab in tabs.Controls.OfType<TabPage>()) {
                 var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.ContextMenuStrip = null;
                 flow.Controls.OfType<CheckBox>().ToList()
                     .ForEach(cb => cb.AutoCheck = false);
             }
@@ -208,20 +186,19 @@ namespace tw_app {
             btnCancel.Enabled = false;
             btnSave.Enabled = false;
             btnCopy.Enabled = false;
-            cmSelect.Enabled = false;
             selectUser(selectedUser);
             foreach(var tab in tabs.Controls.OfType<TabPage>()) {
                 var flow = tab.Controls[0] as FlowLayoutPanel;
+                flow.ContextMenuStrip = null;
                 flow.Controls.OfType<CheckBox>().ToList()
                     .ForEach(cb => cb.AutoCheck = false);
             }
         }
 
         private void btnCopy_Click(object sender, EventArgs e) {
-            CopyForm form = new CopyForm(users);
+            CopyForm form = new CopyForm(allUsers);
             if(form.ShowDialog() == DialogResult.OK) {
-                var fromUser = users.Find(u => u.Username == form.selectedUser);
-                var copiedRoles = fromUser.GetGrantedRoles();
+                var copiedRoles = form.selectedUser.GetGrantedRoles();
                 selectCheckBoxes(copiedRoles);
             }
         }
@@ -249,6 +226,65 @@ namespace tw_app {
             }
             foreach(var tab in tabs.Controls.OfType<TabPage>())
                 updateTabStats(tab);
+        }
+
+        private void cbApps_SelectedIndexChanged(object sender, EventArgs e) {
+            refreshUsersList();
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e) {
+            allSessions = Session.AllSessions(db);
+            refreshUsersList();
+        }
+
+        private void refreshUsersList() {
+            List<User> users = allUsers;
+            if(cbStates.SelectedItem as string == "Connected") {
+                allSessions = Session.AllSessions(db);
+                users = users.Where(u => allSessions.Exists(s => s.Username == u.Username)).ToList();
+            }
+            else if(cbStates.SelectedItem as string == "Locked")
+                users = users.Where(u => u.Locked).ToList();
+            if(cbApps.SelectedIndex != 0)
+                users = users.Where(u => u.GetGrantedRoles()
+                    .Exists(r => r.AppName == (string)cbApps.SelectedItem)).ToList();
+            gvUsers.Rows.Clear();
+            foreach(var user in users)
+                gvUsers.Rows.Add(user.Username, user.Fullname);
+        }
+
+        private void disconnectToolStripMenuItem_Click(object sender, EventArgs e) {
+            var selectedUsernames = gvUsers.SelectedRows.OfType<DataGridViewRow>().Select(r => r.Cells[0].Value as string);
+            var selectedSessions = allSessions.Where(s => selectedUsernames.Contains(s.Username)).ToList();
+            selectedSessions.ForEach(s => s.Terminate());
+            refreshUsersList();
+        }
+
+        private void lockUserToolStripMenuItem_Click(object sender, EventArgs e) {
+            var selectedUsernames = gvUsers.SelectedRows.OfType<DataGridViewRow>().Select(r => r.Cells[0].Value as string);
+            var selectedUsers = allUsers.Where(u => selectedUsernames.Contains(u.Username)).ToList();
+            selectedUsers.ForEach(u => u.LockUser());
+        }
+
+        private void unlockUserToolStripMenuItem_Click(object sender, EventArgs e) {
+            var selectedUsernames = gvUsers.SelectedRows.OfType<DataGridViewRow>().Select(r => r.Cells[0].Value as string);
+            var selectedUsers = allUsers.Where(u => selectedUsernames.Contains(u.Username)).ToList();
+            selectedUsers.ForEach(u => u.UnlockUser());
+            refreshUsersList();
+        }
+
+        private void cbStates_SelectedIndexChanged(object sender, EventArgs e) {
+            refreshUsersList();
+        }
+
+        private void gvUsers_SelectionChanged(object sender, EventArgs e) {
+            btnEdit.Enabled = gvUsers.SelectedRows.Count == 1;
+            if(gvUsers.SelectedRows.Count == 1) {
+                var username = gvUsers.SelectedRows[0].Cells[0].Value as string;
+                selectUser(allUsers.First(u => u.Username == username));
+            }
+            else
+                selectUser(null);
         }
     }
 }

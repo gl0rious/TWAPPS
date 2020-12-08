@@ -16,9 +16,8 @@ namespace TWOra
 {
     public class Database
     {
-        OracleConnection connection;
+        internal OracleConnection connection;
         public string LastError;
-        public User connectedUser;
 
         public bool Connect() {
             if(connection == null)
@@ -34,28 +33,18 @@ namespace TWOra
                     return false;
                 }
             }
-            connectedUser = User.GetConnectedUser(this);
             return true;
         }
-        
-        public List<Session> GetUserSessions() {
-            var users = new List<Session>();
-            var sql = $@"select sid, serial#, username, utilis, 
-                                REGEXP_SUBSTR(machine,'[^\]+$') machine,
-                        logon_time from v$session, utilisateur_app where username=nom_utilis";
-            var rd = execute(sql);
-            while(rd.Read()) {
-                int sid = (int)((decimal)rd["sid"]);
-                int serial = (int)((decimal)rd["serial#"]);
-                string username = (string)rd["username"];
-                string fullname = (string)rd["utilis"];
-                string machine = (string)rd["machine"];
-                DateTime logon = (DateTime)rd["logon_time"];
-                users.Add(new Session { SID=sid,Serial=serial,
-                Username=username,Machine=machine,LogonTime=logon
-                });
-            }
-            return users;
+
+        public bool isDBASession() {
+            var rd = execute($@"
+                SELECT
+                  count(*) count
+                FROM
+                  USER_ROLE_PRIVS
+                WHERE granted_role = 'DBA'
+            ");
+            return rd.Read() && (decimal)rd["count"] > 0;
         }
 
         public string GetUserIP(string host) {
@@ -73,6 +62,10 @@ namespace TWOra
             OracleCommand cmd = new OracleCommand(sql, connection);
             cmd.CommandType = CommandType.Text;
             return cmd.ExecuteReader();
-        }                
+        }
+        ~Database() {
+            if(connection != null)
+                connection.Close();
+        }         
     }
 }

@@ -12,6 +12,7 @@ namespace TWOra {
                 + "User Id={3};Password={4};";
         public static string OracleConnectionString {
             get {
+                Username = Username.ToUpper();
                 return string.Format(template, Host, Port, Service, Username, Password);
             }
         }

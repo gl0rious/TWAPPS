@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using TWOra;
 
-namespace tw_app
-{
+namespace tw_app {
     public partial class CopyForm : Form
     {
         List<User> users;
-        public string selectedUser;
+        public User selectedUser;
         public CopyForm(List<User> users)
         {
             this.users = users;
@@ -28,7 +23,8 @@ namespace tw_app
 
         private void usersGridView_RowEnter(object sender, DataGridViewCellEventArgs e)
         {
-            selectedUser = usersGridView.Rows[e.RowIndex].Cells[0].Value as string;
+            var selectedUsername = usersGridView.Rows[e.RowIndex].Cells[0].Value as string;
+            selectedUser = users.First(u => u.Username == selectedUsername);
         }
 
         private void cancel_btn_Click(object sender, EventArgs e)

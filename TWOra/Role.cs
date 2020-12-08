@@ -32,7 +32,7 @@ namespace TWOra {
         }
 
         private static List<Role> validRoles;
-        public static List<Role> GetAllTWRoles(Database db) {
+        public static List<Role> AllTWRoles(Database db) {
             if(validRoles != null)
                 return validRoles;
             var configRoles = XDocument.Parse(Properties.Resources.FormRoles);
