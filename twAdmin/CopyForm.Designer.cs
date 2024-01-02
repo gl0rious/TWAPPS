@@ -1,4 +1,4 @@
-﻿namespace tw_app
+﻿namespace twAdmin
 {
     partial class CopyForm
     {

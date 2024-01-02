@@ -21,7 +21,7 @@ namespace TWOra {
             var rd = db.execute($"select granted_role from dba_role_privs where grantee = '{Username}'");
             while(rd.Read())
                 perms.Add(rd.GetString(0));
-            grantedRoles = Role.AllTWRoles(db).Where(r => perms.Contains(r.Name)).ToList();
+            grantedRoles = Role.AllValidRoles(db).Where(r => perms.Contains(r.Name)).ToList();
             return grantedRoles;
         }
 
@@ -50,6 +50,8 @@ namespace TWOra {
         }
 
         public static List<User> AllUsers(Database db) {
+            if(users != null)
+                return users;
             users = new List<User>();
             var rd = db.execute(@"
                 SELECT
@@ -97,6 +99,9 @@ namespace TWOra {
             return Username.GetHashCode();
         }
 
+        public void ActivateAllRoles() {
+            db.execute($"alter user {Username} default role all");
+        }
     }
     //public static class Extensions {
     //    public static User FindByName(this List<User> users, string name) {

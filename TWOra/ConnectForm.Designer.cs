@@ -103,6 +103,7 @@
             this.Controls.Add(this.btnOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "ConnectForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "User login";
             this.Load += new System.EventHandler(this.ConnectForm_Load);
             this.ResumeLayout(false);

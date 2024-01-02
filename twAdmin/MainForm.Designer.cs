@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace tw_app
+namespace twAdmin
 {
     partial class MainForm
     {
@@ -42,6 +42,7 @@ namespace tw_app
             this.lockUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unlockUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnUnblock = new System.Windows.Forms.Button();
             this.cbStates = new System.Windows.Forms.ComboBox();
             this.cbApps = new System.Windows.Forms.ComboBox();
             this.tabs = new System.Windows.Forms.TabControl();
@@ -54,10 +55,12 @@ namespace tw_app
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.btnCopy = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.lblUser = new System.Windows.Forms.ToolStripLabel();
+            this.checkRolesButton = new System.Windows.Forms.ToolStripButton();
             this.cmSelect = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deselectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.lblUser = new System.Windows.Forms.ToolStripLabel();
+            this.roleMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -102,6 +105,7 @@ namespace tw_app
             this.gvUsers.ContextMenuStrip = this.cmUsers;
             this.gvUsers.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gvUsers.Location = new System.Drawing.Point(0, 34);
+            this.gvUsers.MultiSelect = false;
             this.gvUsers.Name = "gvUsers";
             this.gvUsers.ReadOnly = true;
             this.gvUsers.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
@@ -165,6 +169,7 @@ namespace tw_app
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnUnblock);
             this.panel1.Controls.Add(this.cbStates);
             this.panel1.Controls.Add(this.cbApps);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
@@ -174,6 +179,16 @@ namespace tw_app
             this.panel1.Size = new System.Drawing.Size(344, 34);
             this.panel1.TabIndex = 8;
             // 
+            // btnUnblock
+            // 
+            this.btnUnblock.Location = new System.Drawing.Point(264, 6);
+            this.btnUnblock.Name = "btnUnblock";
+            this.btnUnblock.Size = new System.Drawing.Size(75, 23);
+            this.btnUnblock.TabIndex = 8;
+            this.btnUnblock.Text = "Unblock";
+            this.btnUnblock.UseVisualStyleBackColor = true;
+            this.btnUnblock.Click += new System.EventHandler(this.btnUnblock_Click);
+            // 
             // cbStates
             // 
             this.cbStates.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -182,7 +197,7 @@ namespace tw_app
             "ALL",
             "Connected",
             "Locked"});
-            this.cbStates.Location = new System.Drawing.Point(22, 7);
+            this.cbStates.Location = new System.Drawing.Point(8, 7);
             this.cbStates.Name = "cbStates";
             this.cbStates.Size = new System.Drawing.Size(119, 21);
             this.cbStates.TabIndex = 7;
@@ -192,7 +207,7 @@ namespace tw_app
             // 
             this.cbApps.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbApps.FormattingEnabled = true;
-            this.cbApps.Location = new System.Drawing.Point(163, 7);
+            this.cbApps.Location = new System.Drawing.Point(133, 7);
             this.cbApps.Name = "cbApps";
             this.cbApps.Size = new System.Drawing.Size(125, 21);
             this.cbApps.TabIndex = 5;
@@ -218,7 +233,8 @@ namespace tw_app
             this.toolStripSeparator2,
             this.btnCopy,
             this.toolStripSeparator3,
-            this.lblUser});
+            this.lblUser,
+            this.checkRolesButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(557, 25);
@@ -288,6 +304,22 @@ namespace tw_app
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
+            // lblUser
+            // 
+            this.lblUser.Name = "lblUser";
+            this.lblUser.Size = new System.Drawing.Size(0, 22);
+            // 
+            // checkRolesButton
+            // 
+            this.checkRolesButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.checkRolesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.checkRolesButton.Image = ((System.Drawing.Image)(resources.GetObject("checkRolesButton.Image")));
+            this.checkRolesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.checkRolesButton.Name = "checkRolesButton";
+            this.checkRolesButton.Size = new System.Drawing.Size(75, 22);
+            this.checkRolesButton.Text = "Check Roles";
+            this.checkRolesButton.Click += new System.EventHandler(this.checkRolesButton_Click);
+            // 
             // cmSelect
             // 
             this.cmSelect.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -310,10 +342,11 @@ namespace tw_app
             this.deselectAllToolStripMenuItem.Text = "Deselect All";
             this.deselectAllToolStripMenuItem.Click += new System.EventHandler(this.deselectAllToolStripMenuItem_Click);
             // 
-            // lblUser
+            // roleMenu
             // 
-            this.lblUser.Name = "lblUser";
-            this.lblUser.Size = new System.Drawing.Size(0, 22);
+            this.roleMenu.Name = "roleMenu";
+            this.roleMenu.Size = new System.Drawing.Size(61, 4);
+            this.roleMenu.Opening += new System.ComponentModel.CancelEventHandler(this.roleMenu_Opening);
             // 
             // MainForm
             // 
@@ -323,7 +356,8 @@ namespace tw_app
             this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
-            this.Text = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "TW Admin";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -367,6 +401,9 @@ namespace tw_app
         private ToolStripMenuItem unlockUserToolStripMenuItem;
         private ComboBox cbStates;
         private ToolStripLabel lblUser;
+        private Button btnUnblock;
+        private ToolStripButton checkRolesButton;
+        private ContextMenuStrip roleMenu;
     }
 }
 

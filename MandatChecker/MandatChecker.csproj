@@ -46,17 +46,64 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lang.en.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Lang.en.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Lang.fr.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Lang.fr.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Text\Message.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Text\Mandat.cs" />
+    <Compile Include="Text\Parser.cs" />
+    <Compile Include="Text\Person.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scanner.cs" />
+    <Compile Include="Text\Scanner.cs" />
+    <Compile Include="Text\Extensions.cs" />
+    <Compile Include="Tokens\AccountField.cs" />
+    <Compile Include="Tokens\AmountField.cs" />
+    <Compile Include="Tokens\ComputedAmountField.cs" />
+    <Compile Include="Tokens\ComputedLineCount.cs" />
+    <Compile Include="Tokens\DateField.cs" />
+    <Compile Include="Tokens\FullnameField.cs" />
+    <Compile Include="Tokens\LineCountField.cs" />
+    <Compile Include="Tokens\MandatNumField.cs" />
+    <Compile Include="Tokens\OneField.cs" />
+    <Compile Include="Tokens\OrdField.cs" />
+    <Compile Include="Tokens\StarField.cs" />
+    <Compile Include="Tokens\TailField.cs" />
+    <Compile Include="Tokens\Field.cs" />
+    <Compile Include="Tokens\ZeroField.cs" />
+    <Compile Include="UI\InfoField.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\MandatView.cs" />
+    <Compile Include="UI\PersonDataGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <EmbeddedResource Include="Lang.en.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Lang.en.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lang.fr.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Lang.fr.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -87,6 +134,7 @@
       <Name>TWOra</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

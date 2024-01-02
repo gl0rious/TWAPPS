@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using TWOra;
 
-namespace tw_app {
+namespace twAdmin {
     public partial class CopyForm : Form
     {
         List<User> users;

@@ -59,24 +59,5 @@ namespace TWOra.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;PRIVILEGES&gt;
-        ///&lt;DEPENSE&gt;
-        ///  &lt;FONCTIONNEMENT&gt;
-        ///    &lt;DP_FONCT&gt;MENU FONCTIONNEMENT&lt;/DP_FONCT&gt;
-        ///    &lt;DP_F_CLOT_GEST&gt;CLÔTURE DE LA GESTION-FCT&lt;/DP_F_CLOT_GEST&gt;
-        ///    &lt;DP_F_TAB_STAT&gt;SAISIE ORD-CHAP-BANQUES-FCT&lt;/DP_F_TAB_STAT&gt;
-        ///    &lt;DP_F_CREDIT&gt;PRISE EN CHARGE DES CRÉDITS-FCT&lt;/DP_F_CREDIT&gt;
-        ///    &lt;DP_F_CREDIT_S&gt;SAISIE DE CRÉDITS-FCT&lt;/DP_F_CREDIT_S&gt;
-        ///    &lt;DP_F_CREDIT_M&gt;MODIFICATION DES CRÉDITS-FCT&lt;/DP_F_CREDIT_M&gt;
-        ///    &lt;DP_F_CREDIT_A&gt;ANNULATION DE CRÉDITS-FCT&lt;/DP_F_CREDIT_A&gt;
-        ///    &lt;DP_F_ENGAGE&gt;ENGAGEMENT DES CRÉDITS-FCT&lt;/DP_F_ENGA [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string FormRoles {
-            get {
-                return ResourceManager.GetString("FormRoles", resourceCulture);
-            }
-        }
     }
 }

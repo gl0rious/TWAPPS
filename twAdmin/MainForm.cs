@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using TWOra;
 
-namespace tw_app {
+namespace twAdmin {
     public partial class MainForm : Form {
         Database db;
         List<Role> editedUserRoles;
@@ -49,7 +49,7 @@ namespace tw_app {
                 this.Close();
                 return;
             }
-            allRoles = Role.AllTWRoles(db);
+            allRoles = Role.AllValidRoles(db);
             allApps = allRoles.Select(r => r.AppName).Distinct().ToList();
             allUsers = User.AllUsers(db);
             allUsers.Sort();
@@ -97,6 +97,7 @@ namespace tw_app {
                         cb.AutoSize = true;
                         cb.Text = role.Title;
                         cb.CheckedChanged += checkBox_CheckedChanged;
+                        cb.ContextMenuStrip = roleMenu;
                         flow.Controls.Add(cb);
                     }
                 }
@@ -178,6 +179,7 @@ namespace tw_app {
                 .ForEach(role => selectedUser.addRoleToUser(role));
             selectedUser.GetGrantedRoles().Except(editedUserRoles).ToList()
                 .ForEach(role => selectedUser.removeRoleFromUser(role));
+            selectedUser.ActivateAllRoles();
         }
 
         private void btnCancel_Click(object sender, EventArgs e) {
@@ -285,6 +287,62 @@ namespace tw_app {
             }
             else
                 selectUser(null);
+        }
+
+        private void btnUnblock_Click(object sender, EventArgs e) {
+            UnblockForm dlg = new UnblockForm(db);
+            dlg.ShowDialog();
+        }
+
+        private void checkRolesButton_Click(object sender, EventArgs e) {
+            var invalidAppRoles = Role.GetAllAppRoles().Where(r => !Role.AllValidRoles(db).Contains(r));
+            string msg = "";
+            if(invalidAppRoles.Count() > 0) {
+                int maxlng = invalidAppRoles.Max(r => r.Name.Length);
+                msg += "Invalid App roles (not in DB):\r\n\r\n" +
+                        string.Join(Environment.NewLine, invalidAppRoles.Select(r => "\t" + r.Name.PadRight(maxlng+5,'.')
+                        + ": " + r.Title)) + "\r\n\r\n";
+            }
+
+            var allValidRolesNames = Role.AllValidRoles(db).Select(r => r.Name);
+            var invalidDBRoles = Role.GetAllDBRoles(db).Where(r => !allValidRolesNames.Contains(r));
+
+            if(invalidDBRoles.Count() > 0)
+                msg += "Invalid DB roles (not in App):" + Environment.NewLine + Environment.NewLine +
+                    string.Join(Environment.NewLine, invalidDBRoles.Select(r => "\t" + r))
+                    + Environment.NewLine;
+
+            using(var dlg = new CheckRolesDialog()) {
+                dlg.SetMessage(msg);
+                dlg.ShowDialog();
+            }
+        }
+
+        private void roleMenu_Opening(object sender, CancelEventArgs e) {
+            if(!btnEdit.Enabled) {
+                e.Cancel = true;
+                return;
+            }
+            var cb = roleMenu.SourceControl as CheckBox;
+            var role = cb.Tag as Role;
+            var users = User.AllUsers(db).Where(u => u.GetGrantedRoles().Contains(role)).ToList();
+            users.Sort((u1,u2)=>u1.Username.CompareTo(u2.Username));
+            roleMenu.Items.Clear();
+            foreach(var user in users) {
+                var item = roleMenu.Items.Add($"{user.Username}  [{user.Fullname}]");
+                item.Tag = user;
+                item.Click += roleMenuItemClicked;
+            }
+        }
+
+        private void roleMenuItemClicked(object sender, EventArgs e) {
+            var item = sender as ToolStripItem;
+            var user = item.Tag as User;
+            var userRow = gvUsers.Rows.OfType<DataGridViewRow>()
+                .FirstOrDefault(row => row.Cells[0].Value.ToString() == user.Username);
+            gvUsers.ClearSelection();
+            userRow.Selected = true;
+            gvUsers.FirstDisplayedScrollingRowIndex = userRow.Index;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,11 +7,12 @@ using System.Text;
 namespace TWOra {
     public class Session {
         internal Database db;
-        public int SID { get; set; }
-        public int Serial { get; set; }
+        public decimal? SID { get; set; }
+        public decimal? Serial { get; set; }
+        public decimal? BlockingSession { get; set; }
         public string Username { get; set; }
         public string Machine { get; set; }
-        public DateTime LogonTime { get; set; }
+        public DateTime? LogonTime { get; set; }
 
         public void Terminate() {
             var rd = db.execute($"ALTER SYSTEM DISCONNECT SESSION '{SID},{Serial}' IMMEDIATE");
@@ -37,6 +39,7 @@ namespace TWOra {
                 SELECT
                   sid,
                   serial#,
+                  blocking_session,
                   username,
                   machine,
                   logon_time
@@ -49,21 +52,36 @@ namespace TWOra {
             ";
             var rd = db.execute(sql);
             while(rd.Read()) {
-                int sid = (int)((decimal)rd["sid"]);
-                int serial = (int)((decimal)rd["serial#"]);
-                string username = (string)rd["username"];
-                string machine = (string)rd["machine"];
-                DateTime logon = (DateTime)rd["logon_time"];
+                decimal? sid = getNullableValue<decimal>(rd,"sid");
+                decimal? serial = getNullableValue<decimal>(rd, "serial#");
+                decimal? blockingSession = getNullableValue<decimal>(rd, "blocking_session");
+                string username = getValue<string>(rd, "username");
+                string machine = getValue<string>(rd, "machine");
+                DateTime? logon = getNullableValue<DateTime>(rd, "logon_time");
                 sessions.Add(new Session {
                     db = db,
                     SID = sid,
                     Serial = serial,
+                    BlockingSession = blockingSession,
                     Username = username,
                     Machine = machine,
                     LogonTime = logon
                 });
             }
             return sessions;
+        }
+
+        static T? getNullableValue<T>(OracleDataReader rd, string name) where T : struct {
+            var value = rd[name];
+            if(value is DBNull)
+                return null;
+            return (T)value;
+        }
+        static T getValue<T>(OracleDataReader rd, string name) where T : class {
+            var value = rd[name];
+            if(value is DBNull)
+                return null;
+            return (T)value;
         }
     }
 }
